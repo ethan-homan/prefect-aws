@@ -709,9 +709,12 @@ class ECSTask(Infrastructure):
         last_status = status = current_status
         t0 = time.time()
         while status != until_status:
-            task = ecs_client.describe_tasks(tasks=[task_arn], cluster=cluster_arn)[
-                "tasks"
-            ][0]
+            try:
+                task = ecs_client.describe_tasks(tasks=[task_arn], cluster=cluster_arn)[
+                    "tasks"
+                ][0]
+            except IndexError as exc:
+                raise RuntimeError("Task not found on ECS Cluster.")
 
             status = task["lastStatus"]
             if status != last_status:
